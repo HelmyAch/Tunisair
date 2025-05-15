@@ -9,7 +9,7 @@ services:
     volumes:
       - .:/app
     ports:
-      - "8005:8000"
+      - "8000:8000"
     environment:
       - DEBUG=1
       - SECRET_KEY=changeme
