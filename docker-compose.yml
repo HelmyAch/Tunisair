@@ -1,6 +1,6 @@
 
 services:
-  web:
+  django-app:
     build:
       context: .
       dockerfile: Dockerfile
@@ -14,3 +14,18 @@ services:
       - DEBUG=1
       - SECRET_KEY=changeme
       - DJANGO_ALLOWED_HOSTS=localhost 127.0.0.1 [::1]
+    networks:
+      - monitoring
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    networks:
+      - monitoring
+
+networks:
+  monitoring:
