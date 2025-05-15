@@ -43,4 +43,5 @@ urlpatterns = [
     path('view_reservation/<int:pk>',views.view_reservation,name='view-reservation-pk'),
     path('delete_reservation/<int:pk>',views.delete_reservation,name='delete-reservation-pk'),
     path('update_reservation',views.update_reservation,name='update-reservation'),
+    path('metrics/', include('django_prometheus.urls')),
 ]+ static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)
