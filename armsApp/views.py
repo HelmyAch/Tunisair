@@ -479,3 +479,7 @@ def update_reservation(request):
         except:
             resp['msg'] = 'Reservation Status has failed to update'
     return HttpResponse(json.dumps(resp), content_type="application/json")
+
+
+def silver_stream_view(request):
+    return HttpResponse("Bienvenue sur la page SilverStream.")
