@@ -73,15 +73,18 @@ stage('Vulnerability Scan (OWASP ZAP)') {
     steps {
         script {
             sh """
-                docker run --rm -v \$(pwd):/zap/wrk \
-                ghcr.io/zaproxy/zaproxy:stable zap-baseline.py \
-                -t http://host.docker.internal:8000 \
-                -r zap-report.html
+                docker run --rm \
+                --user root \
+                --network devsecops-net \
+                -v \$(pwd):/zap/wrk \
+                ghcr.io/zaproxy/zaproxy:stable \
+                zap-baseline.py -t http://django-app:8000 -r zap-report.html
             """
         }
         archiveArtifacts artifacts: 'zap-report.html', fingerprint: true
     }
 }
+
 
 
         stage('Push to Nexus') {
