@@ -122,7 +122,7 @@ pipeline {
                 sh 'docker-compose up --build -d'
             }
         }
-                stage('Database Migration') {
+                stage('Database Migration 2') {
             steps {
                 sh 'docker compose run --rm django-app python manage.py migrate'
             }
