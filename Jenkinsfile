@@ -36,11 +36,11 @@ pipeline {
             }
         }
 
-        stage('Build Docker Image') {
-            steps {
-                sh 'docker build -t ${DOCKER_IMAGE} .'
-            }
-        }
+       // stage('Build Docker Image') {
+//            steps {
+  //              sh 'docker build -t ${DOCKER_IMAGE} .'
+    //        }
+      //  }
 
         stage('Initial Deploy (Docker Compose Up)') {
             steps {
