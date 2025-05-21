@@ -68,6 +68,19 @@ stage('Security Scan (Trivy)') {
     }
 }
 
+       stage('Vulnerability Scan (OWASP ZAP)') {
+    steps {
+        script {
+            sh """
+                docker run --rm -v \$(pwd):/zap/wrk \
+                -t owasp/zap2docker-stable zap-baseline.py \
+                -t http://localhost:8000 \
+                -r zap-report.html
+            """
+             }
+        archiveArtifacts artifacts: 'zap-report.html', fingerprint: true
+         }
+        }
 
 
 
@@ -85,6 +98,12 @@ stage('Security Scan (Trivy)') {
             }
         }
 
+                      stage('Deploy with Docker Compose') {
+            steps {
+                sh 'docker-compose down'
+            }
+        }
+
         stage('Push to Docker Hub') {
             steps {
                 script {
@@ -99,11 +118,11 @@ stage('Security Scan (Trivy)') {
             }
         }
 
-        stage('Vulnerability Scan (Nikto)') {
+              stage('Deploy with Docker Compose') {
             steps {
-                sh 'nikto -h http://localhost:8000 -o nikto-report.html -Format html'
-                archiveArtifacts artifacts: 'nikto-report.html', fingerprint: true
+                sh 'docker-compose up --build -d'
             }
         }
+
     }
 }
