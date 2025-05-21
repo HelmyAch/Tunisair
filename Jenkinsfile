@@ -12,6 +12,7 @@ pipeline {
     }
 
     stages {
+
         stage('Checkout Code') {
             steps {
                 git branch: 'main', url: 'https://github.com/HelmyAch/Tunisair.git'
@@ -41,7 +42,7 @@ pipeline {
             }
         }
 
-        stage('Deploy with Docker Compose') {
+        stage('Initial Deploy (Docker Compose Up)') {
             steps {
                 sh 'docker-compose up --build -d'
             }
@@ -53,36 +54,34 @@ pipeline {
             }
         }
 
-stage('Security Scan (Trivy)') {
-    steps {
-        script {
-            sh """
-                trivy image ${DOCKER_IMAGE} \
-                    --severity MEDIUM,HIGH,CRITICAL \
-                    --format template \
-                    --template @./html.tpl \
-                    -o trivy-report.html
-            """
-        }
-        archiveArtifacts artifacts: 'trivy-report.html', fingerprint: true
-    }
-}
-
-       stage('Vulnerability Scan (OWASP ZAP)') {
-    steps {
-        script {
-            sh """
-                docker run --rm -v \$(pwd):/zap/wrk \
-                -t owasp/zap2docker-stable zap-baseline.py \
-                -t http://localhost:8000 \
-                -r zap-report.html
-            """
-             }
-        archiveArtifacts artifacts: 'zap-report.html', fingerprint: true
-         }
+        stage('Security Scan (Trivy)') {
+            steps {
+                script {
+                    sh """
+                        trivy image ${DOCKER_IMAGE} \
+                        --severity MEDIUM,HIGH,CRITICAL \
+                        --format template \
+                        --template @./html.tpl \
+                        -o trivy-report.html
+                    """
+                }
+                archiveArtifacts artifacts: 'trivy-report.html', fingerprint: true
+            }
         }
 
-
+        stage('Vulnerability Scan (OWASP ZAP)') {
+            steps {
+                script {
+                    sh """
+                        docker run --rm -v \$(pwd):/zap/wrk \
+                        -t owasp/zap2docker-stable zap-baseline.py \
+                        -t http://host.docker.internal:8000 \
+                        -r zap-report.html
+                    """
+                }
+                archiveArtifacts artifacts: 'zap-report.html', fingerprint: true
+            }
+        }
 
         stage('Push to Nexus') {
             steps {
@@ -98,7 +97,7 @@ stage('Security Scan (Trivy)') {
             }
         }
 
-                      stage('Deploy with Docker Compose') {
+        stage('Shutdown Current App') {
             steps {
                 sh 'docker-compose down'
             }
@@ -118,11 +117,15 @@ stage('Security Scan (Trivy)') {
             }
         }
 
-              stage('Deploy with Docker Compose') {
+        stage('Final Deploy') {
             steps {
                 sh 'docker-compose up --build -d'
             }
         }
-
+                stage('Database Migration') {
+            steps {
+                sh 'docker compose run --rm django-app python manage.py migrate'
+            }
+        }
     }
 }
