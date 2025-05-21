@@ -1,0 +1,109 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCKER_IMAGE = "airfly:v1"
+        REGISTRY_URL = "localhost:8082"
+        SONARQUBE_SERVER = "SonarQube"
+        NEXUS_REPO = "myrepo"
+        NEXUS_CREDENTIALS = 'nexus-credentials'
+        SONARQUBE_TOKEN = credentials('sonar-token')
+        DOCKERHUB_IMAGE = "helmyyach/airfly:v1"
+    }
+
+    stages {
+        stage('Checkout Code') {
+            steps {
+                git branch: 'main', url: 'https://github.com/HelmyAch/Tunisair.git'
+            }
+        }
+
+        stage('Static Code Analysis (SonarQube)') {
+            steps {
+                script {
+                    def scannerHome = tool name: 'SonarScanner', type: 'hudson.plugins.sonar.SonarRunnerInstallation'
+                    withSonarQubeEnv("${SONARQUBE_SERVER}") {
+                        sh """
+                            ${scannerHome}/bin/sonar-scanner \
+                            -Dsonar.projectKey=airfly \
+                            -Dsonar.sources=. \
+                            -Dsonar.host.url=http://localhost:9000 \
+                            -Dsonar.login=${SONARQUBE_TOKEN}
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh 'docker build -t ${DOCKER_IMAGE} .'
+            }
+        }
+
+        stage('Deploy with Docker Compose') {
+            steps {
+                sh 'docker-compose up --build -d'
+            }
+        }
+
+        stage('Database Migration') {
+            steps {
+                sh 'docker compose run --rm django-app python manage.py migrate'
+            }
+        }
+
+stage('Security Scan (Trivy)') {
+    steps {
+        script {
+            sh """
+                trivy image ${DOCKER_IMAGE} \
+                    --severity MEDIUM,HIGH,CRITICAL \
+                    --format template \
+                    --template @./html.tpl \
+                    -o trivy-report.html
+            """
+        }
+        archiveArtifacts artifacts: 'trivy-report.html', fingerprint: true
+    }
+}
+
+
+
+
+        stage('Push to Nexus') {
+            steps {
+                script {
+                    withCredentials([usernamePassword(credentialsId: "${NEXUS_CREDENTIALS}", passwordVariable: 'NEXUS_PASSWORD', usernameVariable: 'NEXUS_USER')]) {
+                        sh """
+                            docker login -u "$NEXUS_USER" -p "$NEXUS_PASSWORD" ${REGISTRY_URL}
+                            docker tag ${DOCKER_IMAGE} ${REGISTRY_URL}/repository/${NEXUS_REPO}/${DOCKER_IMAGE}
+                            docker push ${REGISTRY_URL}/repository/${NEXUS_REPO}/${DOCKER_IMAGE}
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Push to Docker Hub') {
+            steps {
+                script {
+                    withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKERHUB_USER', passwordVariable: 'DOCKERHUB_PASS')]) {
+                        sh """
+                            docker tag ${DOCKER_IMAGE} ${DOCKERHUB_IMAGE}
+                            echo \$DOCKERHUB_PASS | docker login -u \$DOCKERHUB_USER --password-stdin
+                            docker push ${DOCKERHUB_IMAGE}
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Vulnerability Scan (Nikto)') {
+            steps {
+                sh 'nikto -h http://localhost:8000 -o nikto-report.html -Format html'
+                archiveArtifacts artifacts: 'nikto-report.html', fingerprint: true
+            }
+        }
+    }
+}
