@@ -76,7 +76,7 @@ stage('Vulnerability Scan (OWASP ZAP)') {
                 docker run --rm \
                 --user root \
                 --network tunisiafly_devsecops-net \
-                -v $(pwd):/zap/wrk \
+                -v \$(pwd):/zap/wrk \
                 ghcr.io/zaproxy/zaproxy:stable \
                 zap-baseline.py -t http://172.22.0.2:8000 -r zap-report.html
             """, returnStatus: true)
