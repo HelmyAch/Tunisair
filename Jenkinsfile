@@ -62,22 +62,14 @@ stage('Database Migration') {
             }
         }
 
-        stage('Run OWASP ZAP Scan') {
-            steps {
-                sh """
-                    docker run --rm -u root \
-                        -v ${env.WORKSPACE}:/zap/wrk:rw \
-                        ghcr.io/zaproxy/zaproxy:stable \
-                        zap-baseline.py -t http://172.19.0.2:8000 -r zap_report.html
-                """
-            }
-        }
+stage('Run ZAP Scan') {
+    steps {
+        sh '''
+            zap.sh -cmd -quickurl http://localhost:8000 -quickout /var/lib/jenkins/workspace/TunisiaFly/zap_report.html
+        '''
+    }
+}
 
-        stage('Publish ZAP Report') {
-            steps {
-                archiveArtifacts artifacts: 'zap_report.html', fingerprint: true
-            }
-        }
 
         stage('Push to Nexus') {
             steps {
