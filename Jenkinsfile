@@ -72,14 +72,14 @@ pipeline {
 stage('Vulnerability Scan (OWASP ZAP)') {
     steps {
         script {
-            sh """
+            sh '''
             docker run --rm \
               --user root \
               --network tunisiafly_devsecops-net \
               -v $(pwd):/zap/wrk \
               ghcr.io/zaproxy/zaproxy:stable \
               zap-baseline.py -t http://172.22.0.2:8000 -r zap-report.html
-            """
+            '''
         }
         archiveArtifacts artifacts: 'zap-report.html', fingerprint: true
     }
