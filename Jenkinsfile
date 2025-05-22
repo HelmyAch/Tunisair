@@ -77,7 +77,7 @@ stage('Vulnerability Scan (OWASP ZAP)') {
                 --user root \
                 -v \$(pwd):/zap/wrk \
                 ghcr.io/zaproxy/zaproxy:stable \
-                zap-baseline.py -t http://localhost:8000 -r zap-report.html
+                zap-baseline.py -t http://127.0.0.1:8000 -r zap-report.html
             """
         }
         archiveArtifacts artifacts: 'zap-report.html', fingerprint: true
