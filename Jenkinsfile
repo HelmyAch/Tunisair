@@ -49,7 +49,7 @@ stage('Database Migration') {
     }
 }
 
-        }
+    
 
         stage('Security Scan (Trivy)') {
             steps {
