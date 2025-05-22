@@ -70,7 +70,6 @@ stage('Run ZAP Scan') {
     }
 }
 
-}
 
 
         stage('Push to Nexus') {
