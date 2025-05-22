@@ -78,7 +78,7 @@ stage('Vulnerability Scan (OWASP ZAP)') {
                 --network devsecops-net \
                 -v \$(pwd):/zap/wrk \
                 ghcr.io/zaproxy/zaproxy:stable \
-                zap-baseline.py -t http://django-app:8000 -r zap-report.html
+                zap-baseline.py -t http://localhost:8000 -r zap-report.html
             """
         }
         archiveArtifacts artifacts: 'zap-report.html', fingerprint: true
