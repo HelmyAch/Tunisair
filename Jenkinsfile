@@ -69,25 +69,23 @@ pipeline {
             }
         }
 
-stage('Vulnerability Scan (OWASP ZAP)') {
+stage('Run OWASP ZAP Scan') {
     steps {
-        script {
-            def status = sh(script: """
-                docker run --rm \
-                --user root \
-                --network tunisiafly_devsecops-net \
-                -v \$(pwd):/zap/wrk \
+        sh """
+            docker run --rm -u root \
+                -v ${env.WORKSPACE}:/zap/wrk:rw \
                 ghcr.io/zaproxy/zaproxy:stable \
-                zap-baseline.py -t http://172.22.0.2:8000 -r zap-report.html
-            """, returnStatus: true)
-            
-            if (status != 0) {
-                error("OWASP ZAP scan failed with exit code ${status}")
-            }
-        }
-        archiveArtifacts artifacts: 'zap-report.html', fingerprint: true
+                zap-baseline.py -t http://172.22.0.2:8000 -r zap_report.html
+        """
     }
 }
+
+stage('Publish ZAP Report') {
+    steps {
+        archiveArtifacts artifacts: 'zap_report.html', fingerprint: true
+    }
+}
+
 
 
 
