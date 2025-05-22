@@ -68,7 +68,7 @@ stage('Database Migration') {
                     docker run --rm -u root \
                         -v ${env.WORKSPACE}:/zap/wrk:rw \
                         ghcr.io/zaproxy/zaproxy:stable \
-                        zap-baseline.py -t http://172.18.0.8:8000 -r zap_report.html
+                        zap-baseline.py -t http://172.19.0.2:8000 -r zap_report.html
                 """
             }
         }
