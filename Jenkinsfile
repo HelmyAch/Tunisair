@@ -65,7 +65,7 @@ stage('Database Migration') {
 stage('Run ZAP Scan') {
     steps {
         sh '''
-            zap.sh -cmd -port 8090 -quickurl http://localhost:8000 -quickout zap_report.html
+            zap.sh -cmd -port 8090 -quickurl http://localhost:8000 -quickout  /var/lib/jenkins/workspace/TunisiaFly/zap_report.html
         '''
     }
 }
