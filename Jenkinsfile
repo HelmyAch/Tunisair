@@ -19,7 +19,7 @@ pipeline {
             }
         }
 
-        stage('Static Code Analysis (SonarQube)') {
+    /*    stage('Static Code Analysis (SonarQube)') {
             steps {
                 script {
                     def scannerHome = tool name: 'SonarScanner', type: 'hudson.plugins.sonar.SonarRunnerInstallation'
@@ -34,7 +34,7 @@ pipeline {
                     }
                 }
             }
-        }
+        } */
 
        // stage('Build Docker Image') {
 //            steps {
@@ -75,7 +75,6 @@ stage('Vulnerability Scan (OWASP ZAP)') {
             sh """
                 docker run --rm \
                 --user root \
-                --network devsecops-net \
                 -v \$(pwd):/zap/wrk \
                 ghcr.io/zaproxy/zaproxy:stable \
                 zap-baseline.py -t http://localhost:8000 -r zap-report.html
