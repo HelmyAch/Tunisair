@@ -69,7 +69,7 @@ pipeline {
                         --network ${DOCKER_NETWORK} \
                         -v ${env.WORKSPACE}:/zap/wrk:rw \
                         ghcr.io/zaproxy/zaproxy:stable \
-                        zap-baseline.py -t http://${APP_CONTAINER_NAME}:8000 -r zap_report.html
+                        zap-baseline.py -t http://172.22.0.2:8000 -r zap_report.html
                 """
             }
         }
