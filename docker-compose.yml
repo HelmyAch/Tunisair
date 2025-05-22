@@ -14,9 +14,3 @@ services:
       - DEBUG=1
       - SECRET_KEY=changeme
       - DJANGO_ALLOWED_HOSTS=localhost 127.0.0.1 [::1]
-    networks:
-      - devops_devsecops-net
-
-networks:
-  devops_devsecops-net:
-    driver: bridge

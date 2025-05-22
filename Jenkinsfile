@@ -38,9 +38,7 @@ pipeline {
 stage('Initial Deploy (Docker Compose Up)') {
     steps {
         sh 'docker-compose up --build -d'
-        // On connecte le container django-app au réseau devsecops-net
-        sh 'docker network connect devops_devsecops-net django-app || echo "Already connected"'
-    }
+     }
 }
 
 stage('Database Migration') {
