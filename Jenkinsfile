@@ -9,6 +9,8 @@ pipeline {
         NEXUS_CREDENTIALS = 'nexus-credentials'
         SONARQUBE_TOKEN = credentials('sonar-token')
         DOCKERHUB_IMAGE = "helmyyach/airfly:v1"
+        DOCKER_NETWORK = "devsecops-net" // Mets ici ton vrai nom réseau Docker
+        APP_CONTAINER_NAME = "airfly-app" // Nom du container de ton appli dans ce réseau
     }
 
     stages {
@@ -19,7 +21,7 @@ pipeline {
             }
         }
 
-    /*    stage('Static Code Analysis (SonarQube)') {
+/*    stage('Static Code Analysis (SonarQube)') {
             steps {
                 script {
                     def scannerHome = tool name: 'SonarScanner', type: 'hudson.plugins.sonar.SonarRunnerInstallation'
@@ -35,13 +37,6 @@ pipeline {
                 }
             }
         } */
-
-       // stage('Build Docker Image') {
-//            steps {
-  //              sh 'docker build -t ${DOCKER_IMAGE} .'
-    //        }
-      //  }
-
         stage('Initial Deploy (Docker Compose Up)') {
             steps {
                 sh 'docker-compose up --build -d'
@@ -50,46 +45,40 @@ pipeline {
 
         stage('Database Migration') {
             steps {
-                sh 'docker compose run --rm django-app python manage.py migrate'
+                sh 'docker-compose run --rm django-app python manage.py migrate'
             }
         }
 
         stage('Security Scan (Trivy)') {
             steps {
-                script {
-                    sh """
-                        trivy image ${DOCKER_IMAGE} \
-                        --severity MEDIUM,HIGH,CRITICAL \
-                        --format template \
-                        --template @./html.tpl \
-                        -o trivy-report.html
-                    """
-                }
+                sh """
+                    trivy image ${DOCKER_IMAGE} \
+                    --severity MEDIUM,HIGH,CRITICAL \
+                    --format template \
+                    --template @./html.tpl \
+                    -o trivy-report.html
+                """
                 archiveArtifacts artifacts: 'trivy-report.html', fingerprint: true
             }
         }
 
-stage('Run OWASP ZAP Scan') {
-    steps {
-        sh """
-            docker run --rm -u root \
-                -v ${env.WORKSPACE}:/zap/wrk:rw \
-                ghcr.io/zaproxy/zaproxy:stable \
-                zap-baseline.py -t http://172.22.0.2:8000 -r zap_report.html
-        """
-    }
-}
+        stage('Run OWASP ZAP Scan') {
+            steps {
+                sh """
+                    docker run --rm -u root \
+                        --network ${DOCKER_NETWORK} \
+                        -v ${env.WORKSPACE}:/zap/wrk:rw \
+                        ghcr.io/zaproxy/zaproxy:stable \
+                        zap-baseline.py -t http://${APP_CONTAINER_NAME}:8000 -r zap_report.html
+                """
+            }
+        }
 
-stage('Publish ZAP Report') {
-    steps {
-        archiveArtifacts artifacts: 'zap_report.html', fingerprint: true
-    }
-}
-
-
-
-
-
+        stage('Publish ZAP Report') {
+            steps {
+                archiveArtifacts artifacts: 'zap_report.html', fingerprint: true
+            }
+        }
 
         stage('Push to Nexus') {
             steps {
@@ -130,9 +119,10 @@ stage('Publish ZAP Report') {
                 sh 'docker-compose up --build -d'
             }
         }
-                stage('Database Migration 2') {
+
+        stage('Database Migration 2') {
             steps {
-                sh 'docker compose run --rm django-app python manage.py migrate'
+                sh 'docker-compose run --rm django-app python manage.py migrate'
             }
         }
     }
