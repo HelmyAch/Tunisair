@@ -19,7 +19,7 @@ pipeline {
             }
         }
 
-/*    stage('Static Code Analysis (SonarQube)') {
+    stage('Static Code Analysis (SonarQube)') {
             steps {
                 script {
                     def scannerHome = tool name: 'SonarScanner', type: 'hudson.plugins.sonar.SonarRunnerInstallation'
@@ -34,7 +34,7 @@ pipeline {
                     }
                 }
             }
-        } */
+        } 
 stage('Initial Deploy (Docker Compose Up)') {
     steps {
         sh 'docker-compose up --build -d'
