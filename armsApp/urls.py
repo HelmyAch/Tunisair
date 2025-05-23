@@ -45,4 +45,5 @@ urlpatterns = [
     path('update_reservation',views.update_reservation,name='update-reservation'),
     path('metrics/', include('django_prometheus.urls')),
     path('SilverStream', views.silver_stream_view, name='silver-stream'),
+    path('search_result/<int:fromA>/<int:toA>/', views.search_result_optional, name='search-result-optional'),
 ]+ static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)

@@ -479,6 +479,9 @@ def update_reservation(request):
         except:
             resp['msg'] = 'Reservation Status has failed to update'
     return HttpResponse(json.dumps(resp), content_type="application/json")
+def search_result_optional(request, fromA, toA):
+    departure = "default"  # ou utilise une valeur logique
+    return search_result(request, fromA, toA, departure)
 
 
 def silver_stream_view(request):
