@@ -32,7 +32,7 @@ pipeline {
         }
     }
 
-    stage(lancer les teste){
+    stage('lancer les teste'){
 
         steps {
             sh '''
