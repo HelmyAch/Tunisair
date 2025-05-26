@@ -18,7 +18,29 @@ pipeline {
                 git branch: 'main', url: 'https://github.com/HelmyAch/Tunisair.git'
             }
         }
+    stage ('ptrparer lenvironeùment python'){
 
+        steps {
+            sh '''
+            python3 -m venv venv
+            . venv/bin/activate
+            pip install --upgrade pip
+            pip install -r requirements.txt
+        
+           '''
+        }
+    }
+
+    stage(lancer les teste){
+
+        steps {
+            sh '''
+            . venv/bin/activate
+            python manage.py test
+              '''
+}
+}
+    }
     stage('Static Code Analysis (SonarQube)') {
             steps {
                 script {
