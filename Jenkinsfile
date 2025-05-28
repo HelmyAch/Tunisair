@@ -19,7 +19,7 @@ pipeline {
             }
         }
 
-    stage ('ptrparer lenvironeùment python'){
+   /* stage ('ptrparer lenvironeùment python'){
 
         steps {
             sh '''
@@ -57,8 +57,8 @@ pipeline {
                     }
                 }
             }
-        } 
-/*stage('Initial Deploy (Docker Compose Up)') {
+        } */
+stage('Initial Deploy (Docker Compose Up)') {
     steps {
         sh 'docker-compose up --build -d'
      }
@@ -68,7 +68,7 @@ stage('Database Migration') {
     steps {
         sh 'docker-compose run --rm django-app python manage.py migrate'
     }
-}*/
+}
 
     
 
@@ -115,11 +115,11 @@ stage('Archive ZAP Report') {
             }
         }
 
-       /* stage('Shutdown Current App') {
+        stage('Shutdown Current App') {
             steps {
                 sh 'docker-compose down'
             }
-        } */
+        } 
 
         stage('Push to Docker Hub') {
             steps {
@@ -135,7 +135,7 @@ stage('Archive ZAP Report') {
             }
         }
 
-       /* stage('Final Deploy') {
+       stage('Final Deploy') {
             steps {
                 sh 'docker-compose up --build -d'
             }
@@ -145,6 +145,6 @@ stage('Archive ZAP Report') {
             steps {
                 sh 'docker-compose run --rm django-app python manage.py migrate'
             }
-        } */
+        } 
     }
 }
